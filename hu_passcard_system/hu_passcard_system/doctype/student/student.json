@@ -1,0 +1,231 @@
+{
+ "actions": [],
+ "autoname": "HU-.##### ",
+ "creation": "2026-04-25 10:29:46.877556",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "student__information_tab",
+  "student__information_section",
+  "full_name",
+  "date_of_birth",
+  "email",
+  "password",
+  "column_break_sefq",
+  "is_active",
+  "phone_number",
+  "whatsapp_number",
+  "photo",
+  "preview_image",
+  "previous_academic_record_tab",
+  "faculty",
+  "department1",
+  "discount_percentage",
+  "fee",
+  "column_break_gctc",
+  "academic_year",
+  "academic_term",
+  "student_batch",
+  "parent_information_tab",
+  "father_name",
+  "mother_name",
+  "address_1",
+  "address_2",
+  "column_break_ldpi",
+  "father_phone_number",
+  "mother_phone_number",
+  "emergency_contact"
+ ],
+ "fields": [
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Full Name"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Email",
+   "options": "Email",
+   "unique": 1
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "whatsapp_number",
+   "fieldtype": "Data",
+   "label": "Whatsapp Number"
+  },
+  {
+   "fieldname": "faculty",
+   "fieldtype": "Link",
+   "label": "Faculty ",
+   "options": "Faculty"
+  },
+  {
+   "default": "0",
+   "fieldname": "discount_percentage",
+   "fieldtype": "Float",
+   "label": "Discount "
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Datetime",
+   "label": "Date Of Birth"
+  },
+  {
+   "fieldname": "emergency_contact",
+   "fieldtype": "Data",
+   "label": "Emergency Contact"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "column_break_sefq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "student__information_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "123",
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "fieldname": "parent_information_tab",
+   "fieldtype": "Tab Break",
+   "label": "Address & Contact"
+  },
+  {
+   "fieldname": "student__information_tab",
+   "fieldtype": "Tab Break",
+   "label": "Student  Information"
+  },
+  {
+   "fieldname": "photo",
+   "fieldtype": "Attach Image",
+   "label": "Photo"
+  },
+  {
+   "fieldname": "department1",
+   "fieldtype": "Link",
+   "label": "Department ",
+   "options": "Departments"
+  },
+  {
+   "fieldname": "fee",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Semester fee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "previous_academic_record_tab",
+   "fieldtype": "Tab Break",
+   "label": "Semester Detail"
+  },
+  {
+   "fieldname": "column_break_gctc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "father_name",
+   "fieldtype": "Data",
+   "label": "Father Name"
+  },
+  {
+   "fieldname": "mother_name",
+   "fieldtype": "Data",
+   "label": "Mother Name"
+  },
+  {
+   "fieldname": "father_phone_number",
+   "fieldtype": "Data",
+   "label": "Father phone number",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "mother_phone_number",
+   "fieldtype": "Data",
+   "label": "Mother phone number",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "address_1",
+   "fieldtype": "Data",
+   "label": "Address 1"
+  },
+  {
+   "fieldname": "address_2",
+   "fieldtype": "Data",
+   "label": "Address 2"
+  },
+  {
+   "fieldname": "column_break_ldpi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "preview_image",
+   "fieldtype": "Image",
+   "label": "preview_image"
+  },
+  {
+   "fieldname": "student_batch",
+   "fieldtype": "Link",
+   "label": "Student batch",
+   "options": "Batches"
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "label": "Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic year",
+   "options": "Academic year"
+  }
+ ],
+ "links": [],
+ "modified": "2026-05-02 14:24:30.252663",
+ "modified_by": "Administrator",
+ "module": "Hu Passcard System",
+ "name": "Student",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "full_name",
+ "track_changes": 1
+}
