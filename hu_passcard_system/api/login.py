@@ -2,27 +2,11 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.model.document import Document
-from frappe.utils.password import check_password
-
-
-class Student(Document):
-    pass
+from frappe.utils.password import get_decrypted_password
 
 
 @frappe.whitelist(allow_guest=True)
 def student_login(student_id, password):
-    """
-    Student Login API
-    Endpoint: /api/method/your_app.hu_passcard_system.doctype.student.student.student_login
-
-    Params:
-        student_id  — e.g. "HU-00001"
-        password    — plain text password entered by student
-
-    Returns:
-        success + student info, or error message
-    """
 
     # ── 1. Validate inputs ────────────────────────────────────────────────
     if not student_id or not password:
@@ -41,46 +25,60 @@ def student_login(student_id, password):
             "full_name",
             "email",
             "phone_number",
+            "whatsapp_number",
             "faculty",
             "department1",
-            "current_semester",
-            "student_class",
+            "student_batch",
             "academic_year",
+            "academic_term",
             "fee",
             "discount_percentage",
             "photo",
             "is_active",
-            "password"
+            "date_of_birth",
         ],
-        as_dict=True
+        as_dict=True,
     )
 
     # ── 4. Check account is active ────────────────────────────────────────
     if not student.is_active:
-        frappe.throw("Your account is inactive. Please contact the university.", frappe.AuthenticationError)
+        frappe.throw(
+            "Your account is inactive. Please contact the university.",
+            frappe.AuthenticationError,
+        )
 
-    # ── 5. Verify password (stored as plain in Password field) ────────────
-    stored_password = frappe.db.get_value("Student", student_id, "password")
+    # ── 5. Verify password ────────────────────────────────────────────────
+    # For custom doctypes, Frappe encrypts Password fields.
+    # get_decrypted_password() retrieves the actual plain text value.
+    try:
+        stored_password = get_decrypted_password(
+            doctype="Student",
+            name=student_id,
+            fieldname="password",
+            raise_exception=False,
+        )
+    except Exception:
+        frappe.throw("Could not verify password. Contact admin.", frappe.AuthenticationError)
 
-    if stored_password != password:
+    if not stored_password or stored_password.strip() != password.strip():
         frappe.throw("Incorrect password.", frappe.AuthenticationError)
 
     # ── 6. Return student data ────────────────────────────────────────────
     return {
-        "success": True,
-        "message": "Login successful",
         "student": {
-            "student_id":        student.name,
-            "full_name":         student.full_name,
-            "email":             student.email,
-            "phone_number":      student.phone_number,
-            "faculty":           student.faculty,
-            "department":        student.department1,
-            "current_semester":  student.current_semester,
-            "batch":             student.student_class,
-            "academic_year":     student.academic_year,
-            "fee":               student.fee,
-            "discount":          student.discount_percentage,
-            "photo":             student.photo,
+            "student_id":      student.name,
+            "full_name":       student.full_name,
+            "email":           student.email,
+            "phone_number":    student.phone_number,
+            "whatsapp_number": student.whatsapp_number,
+            "faculty":         student.faculty,
+            "department":      student.department1,
+            "batch":           student.student_batch,
+            "academic_year":   student.academic_year,
+            "academic_term":   student.academic_term,
+            "fee":             student.fee,
+            "discount":        student.discount_percentage,
+            "photo":           student.photo,
+            "date_of_birth":   str(student.date_of_birth) if student.date_of_birth else None,
         }
     }

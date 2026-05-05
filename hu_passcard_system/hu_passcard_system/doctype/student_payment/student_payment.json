@@ -1,0 +1,121 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-05 12:48:44.552649",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "student",
+  "student_name",
+  "academic_term",
+  "payment_type",
+  "amount",
+  "status",
+  "phone_number",
+  "column_break_zulx",
+  "payment_date",
+  "transaction_id",
+  "waafi_reference_id",
+  "issuer_transaction_id",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
+  },
+  {
+   "fetch_from": "student.full_name",
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "label": "Student name"
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "label": "Academic term",
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "payment_type",
+   "fieldtype": "Select",
+   "label": "Payment type",
+   "options": "Mid term\nFinal\nMonth"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nPaid\nParial"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "label": "Phone number"
+  },
+  {
+   "default": "Now",
+   "fieldname": "payment_date",
+   "fieldtype": "Datetime",
+   "label": "Payment date"
+  },
+  {
+   "fieldname": "column_break_zulx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "transaction_id",
+   "fieldtype": "Data",
+   "label": "Transaction id"
+  },
+  {
+   "fieldname": "waafi_reference_id",
+   "fieldtype": "Data",
+   "label": "Waafi reference id"
+  },
+  {
+   "fieldname": "issuer_transaction_id",
+   "fieldtype": "Data",
+   "label": "Issuer transaction id"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-05 12:58:23.922029",
+ "modified_by": "Administrator",
+ "module": "Hu Passcard System",
+ "name": "Student Payment",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
