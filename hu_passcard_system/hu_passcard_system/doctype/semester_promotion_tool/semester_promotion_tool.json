@@ -1,25 +1,79 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:from_academic_year",
  "creation": "2026-04-25 13:30:07.069081",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_um3r"
+  "from_section",
+  "from_academic_year",
+  "rom_academic_term",
+  "column_break_jn42",
+  "to_academic_year",
+  "to_academic_term",
+  "amended_from"
  ],
  "fields": [
   {
-   "fieldname": "section_break_um3r",
-   "fieldtype": "Section Break"
+   "fieldname": "from_section",
+   "fieldtype": "Section Break",
+   "label": "From "
+  },
+  {
+   "fieldname": "from_academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "From Academic Year",
+   "options": "Academic year",
+   "unique": 1
+  },
+  {
+   "fieldname": "rom_academic_term",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "From Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "column_break_jn42",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "To Academic Year",
+   "options": "Academic year"
+  },
+  {
+   "fieldname": "to_academic_term",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "To Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Semester Promotion Tool",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2026-04-25 13:30:07.069081",
+ "modified": "2026-05-06 17:31:48.099012",
  "modified_by": "Administrator",
  "module": "Hu Passcard System",
  "name": "Semester Promotion Tool",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

@@ -22,10 +22,11 @@
   "department1",
   "discount_percentage",
   "fee",
-  "column_break_gctc",
+  "column_break_rdgn",
   "academic_year",
   "academic_term",
   "student_batch",
+  "semester_history",
   "parent_information_tab",
   "father_name",
   "mother_name",
@@ -137,10 +138,6 @@
    "label": "Semester Detail"
   },
   {
-   "fieldname": "column_break_gctc",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "father_name",
    "fieldtype": "Data",
    "label": "Father Name"
@@ -198,10 +195,20 @@
    "fieldtype": "Link",
    "label": "Academic year",
    "options": "Academic year"
+  },
+  {
+   "fieldname": "column_break_rdgn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "semester_history",
+   "fieldtype": "Table",
+   "label": "Semester history",
+   "options": "Semester History"
   }
  ],
  "links": [],
- "modified": "2026-05-02 14:24:30.252663",
+ "modified": "2026-05-06 17:35:41.065991",
  "modified_by": "Administrator",
  "module": "Hu Passcard System",
  "name": "Student",

@@ -23,6 +23,7 @@
   {
    "fieldname": "student",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Student",
    "options": "Student"
   },
@@ -30,11 +31,13 @@
    "fetch_from": "student.full_name",
    "fieldname": "student_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Student name"
   },
   {
    "fieldname": "academic_term",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Academic term",
    "options": "Academic Term"
   },
@@ -47,11 +50,13 @@
   {
    "fieldname": "amount",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Amount"
   },
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Status",
    "options": "Pending\nPaid\nParial"
   },
@@ -64,6 +69,7 @@
    "default": "Now",
    "fieldname": "payment_date",
    "fieldtype": "Datetime",
+   "in_list_view": 1,
    "label": "Payment date"
   },
   {
@@ -94,7 +100,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-05 12:58:23.922029",
+ "modified": "2026-05-06 11:41:33.225717",
  "modified_by": "Administrator",
  "module": "Hu Passcard System",
  "name": "Student Payment",

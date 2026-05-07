@@ -1,185 +1,635 @@
+
+
+// import { useState, useEffect } from 'react'
+// import { Link } from 'react-router-dom'
+
+// interface Props { student: any }
+
+// export default function Passcard({ student }: Props) {
+//   const [passcard, setPasscard] = useState<any>(null)
+//   const [passcardHistory, setPasscardHistory] = useState<any[]>([]) // NEW: State for history
+//   const [term, setTerm]         = useState<any>(null)
+//   const [loading, setLoading]   = useState(true)
+//   const [error, setError]       = useState('')
+//   const [downloading, setDownloading] = useState(false)
+
+//   const initials = student.full_name?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+
+//   useEffect(() => { 
+//     fetchData() 
+//   }, [])
+
+//   async function fetchData() {
+//     setLoading(true)
+//     try {
+//       // 1. Fetch Current Term Info
+//       const resTerm = await fetch(`/api/method/hu_passcard_system.api.payment.get_term_info?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
+//       const dataTerm = await resTerm.json()
+//       if (dataTerm.message?.term) {
+//         setTerm(dataTerm.message.term)
+//       }
+
+//       // 2. Fetch Active Passcard for Current Term
+//       const resPass = await fetch(`/api/method/hu_passcard_system.api.payment.get_student_passcard?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
+//       const dataPass = await resPass.json()
+//       if (dataPass.message?.passcard) {
+//         setPasscard(dataPass.message.passcard)
+//       } else {
+//         setError('No active passcard found for the current semester. Please complete your fee payment.')
+//       }
+
+//       // 3. Fetch ALL Passcard History
+//       const resHistory = await fetch(`/api/method/hu_passcard_system.api.payment.get_all_student_passcards?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
+//       const dataHistory = await resHistory.json()
+//       if (dataHistory.message?.passcards) {
+//         setPasscardHistory(dataHistory.message.passcards)
+//       }
+
+//     } catch {
+//       setError('Failed to load passcard data. Please try again.')
+//     } finally {
+//       setLoading(false)
+//     }
+//   }
+
+//   function handleDownload() {
+//     const element = document.getElementById('passcard-element')
+//     if (!element) return
+
+//     setDownloading(true)
+    
+//     const script = document.createElement('script')
+//     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+//     script.onload = () => {
+//       ;(window as any).html2canvas(element, { scale: 2 }).then((canvas: HTMLCanvasElement) => {
+//         const link = document.createElement('a')
+//         link.download = `HU_Passcard_${student.student_id}.png`
+//         link.href = canvas.toDataURL('image/png')
+//         link.click()
+//         setDownloading(false)
+//       })
+//     }
+//     document.body.appendChild(script)
+//   }
+
+//   function getShortMonth(dateStr: string) {
+//     if (!dateStr) return ''
+//     return new Date(dateStr).toLocaleString('en-US', { month: 'short' })
+//   }
+
+//   const midTermLabel = term 
+//     ? `${getShortMonth(term.start_date)}-${getShortMonth(term.mid_term_exam_end)}` 
+//     : '...'
+    
+//   const finalExamLabel = term 
+//     ? `${getShortMonth(term.final_start)}-${getShortMonth(term.end_date)}` 
+//     : '...'
+
+//   let examYear = new Date().getFullYear().toString();
+//   if (term?.end_date) {
+//     examYear = new Date(term.end_date).getFullYear().toString();
+//   } else if (student?.academic_year) {
+//     const yearMatch = student.academic_year.match(/\d{4}/g);
+//     if (yearMatch) {
+//       examYear = yearMatch[yearMatch.length - 1]; 
+//     }
+//   }
+
+//   const pType = String(passcard?.payment_type || '').toLowerCase()
+//   const showMidTermStamp = pType.includes('mid') || pType.includes('month') || pType.includes('final')
+//   const showFinalStamp = pType.includes('final')
+
+//   return (
+//     <div className="min-h-screen bg-gray-100 pb-10">
+//       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm print:hidden">
+//         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+//           <div className="flex items-center gap-2.5">
+//             <div className="w-9 h-9 bg-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-xs">HU</div>
+//             <span className="text-blue-800 font-bold text-base">Student Portal</span>
+//           </div>
+//           <div className="hidden md:flex items-center gap-1">
+//             <Link to="/dashboard" className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">Dashboard</Link>
+//             <Link to="/pay-fee" className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">Pay Fee</Link>
+//             <Link to="/passcard" className="px-4 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Passcard</Link>
+//           </div>
+//           <div className="flex items-center gap-3">
+//             <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-800 font-bold text-sm flex items-center justify-center">{initials}</div>
+//           </div>
+//         </div>
+//       </nav>
+
+//       <div className="max-w-3xl mx-auto px-4 mt-10">
+//         <div className="flex justify-between items-end mb-6 print:hidden">
+//           <div>
+//             <h1 className="text-2xl font-bold text-gray-900 mb-1">🪪 Exam Passcard</h1>
+//             <p className="text-sm text-gray-500">Your official digital examination card</p>
+//           </div>
+          
+//           {passcard && !loading && !error && (
+//             <button 
+//               onClick={handleDownload} 
+//               disabled={downloading}
+//               className="hidden md:block bg-blue-800 hover:bg-blue-900 disabled:bg-blue-400 text-white text-xs font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors"
+//             >
+//               {downloading ? '⏳ Preparing Image...' : '⬇️ Download Image'}
+//             </button>
+//           )}
+//         </div>
+
+//         {loading ? (
+//           <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm print:hidden">
+//             <p className="text-gray-400 text-sm mt-3">Loading your passcard…</p>
+//           </div>
+//         ) : error && !passcard ? (
+//           <div className="bg-white border border-gray-200 rounded-xl p-8 text-center shadow-sm print:hidden">
+//             <div className="text-5xl mb-4">🔒</div>
+//             <h2 className="text-lg font-bold text-gray-800 mb-2">No Passcard Available</h2>
+//             <p className="text-sm text-gray-500 mb-6">{error}</p>
+//             <Link to="/pay-fee" className="inline-block bg-blue-800 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-blue-900 transition-colors">Pay Fee to Get Passcard →</Link>
+//           </div>
+//         ) : passcard ? (
+          
+//           /* ── THE ACTIVE PAPER-STYLE PASSCARD ── */
+//           <div id="passcard-element" className="bg-[#eef7f0] border-2 border-gray-400 p-6 md:p-10 shadow-2xl relative overflow-hidden text-gray-900 font-sans mb-10">
+            
+//             {/* Header Section */}
+//             <div className="flex flex-col md:flex-row justify-between items-center border-b-2 border-green-800 pb-5 mb-6 gap-4">
+//               <div className="w-24 h-28 border-2 border-green-800 flex flex-col justify-center items-center text-green-800 bg-white">
+//                 <span className="font-bold text-5xl">HU</span>
+//               </div>
+              
+//               <div className="text-center flex-1">
+//                 <h1 className="text-2xl md:text-3xl font-serif font-extrabold text-green-900 tracking-wider uppercase">
+//                   Hormuud University
+//                 </h1>
+//                 <p className="font-bold text-sm md:text-base mt-2 text-gray-800">
+//                   Academic Year {student.academic_year || '2025/2026 B'}
+//                 </p>
+//                 <p className="font-bold text-sm md:text-base text-gray-800">
+//                   Finance Clearance Card
+//                 </p>
+//                 <div className="bg-blue-800 text-white font-bold px-6 py-1.5 inline-block mt-3 tracking-widest text-sm border-2 border-blue-900 shadow-sm uppercase">
+//                   Examination Card
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Certification Body */}
+//             <div className="text-base md:text-lg leading-loose mb-10 font-semibold text-gray-800">
+//               <p className="block">
+//                 This card certified that Mr. / Mrs. 
+//                 <span className="inline-block border-b-2 border-black border-dashed min-w-[250px] md:min-w-[350px] px-3 ml-2 font-bold text-black uppercase">
+//                   {student.full_name}
+//                 </span>
+//               </p>
+//               <p className="block mt-4 md:mt-6">
+//                 ID No: 
+//                 <span className="inline-block border-b-2 border-black border-dashed min-w-[120px] px-3 mx-2 font-bold text-black uppercase">
+//                   {student.student_id}
+//                 </span>
+//                 Class: 
+//                 <span className="inline-block border-b-2 border-black border-dashed min-w-[120px] px-3 mx-2 font-bold text-black uppercase">
+//                   {student.batch || student.department}
+//                 </span>
+//                 is eligible to attend this exam.
+//               </p>
+//             </div>
+
+//             {/* Exam Stamps Circles */}
+//             <div className="flex flex-col md:flex-row justify-center md:justify-around items-center gap-10 mb-8 px-4">
+              
+//               {/* Mid-Term Wrapper */}
+//               <div className="flex flex-col items-center">
+//                 <div className="relative w-40 h-40 md:w-44 md:h-44 rounded-full border-2 border-black flex flex-col justify-center items-center text-center p-2 bg-[#eef7f0]">
+//                   <div className="text-sm md:text-base font-extrabold uppercase leading-snug">
+//                     Mid-Term<br/>Exam
+//                   </div>
+                  
+//                   {showMidTermStamp && (
+//                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+//                       <div className="border-[6px] border-red-600 text-red-600 text-4xl md:text-5xl font-black uppercase tracking-widest transform -rotate-[15deg] px-5 py-2 opacity-90 mix-blend-multiply bg-transparent rounded-sm">
+//                         PAID
+//                       </div>
+//                     </div>
+//                   )}
+//                 </div>
+                
+//                 <div className="mt-4 text-xs md:text-sm font-bold text-gray-800">
+//                   Date: ___/___/{examYear}
+//                 </div>
+//                 <div className="mt-1 text-sm md:text-base font-extrabold text-gray-900 tracking-wider uppercase">
+//                   {midTermLabel}
+//                 </div>
+//               </div>
+
+//               {/* Final Exam Wrapper */}
+//               <div className="flex flex-col items-center">
+//                 <div className="relative w-40 h-40 md:w-44 md:h-44 rounded-full border-2 border-black flex flex-col justify-center items-center text-center p-2 bg-[#eef7f0]">
+//                   <div className="text-sm md:text-base font-extrabold uppercase leading-snug">
+//                     Final<br/>Exam
+//                   </div>
+                  
+//                   {showFinalStamp && (
+//                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+//                       <div className="border-[6px] border-red-600 text-red-600 text-4xl md:text-5xl font-black uppercase tracking-widest transform -rotate-[15deg] px-5 py-2 opacity-90 mix-blend-multiply bg-transparent rounded-sm">
+//                         PAID
+//                       </div>
+//                     </div>
+//                   )}
+//                 </div>
+                
+//                 <div className="mt-4 text-xs md:text-sm font-bold text-gray-800">
+//                   Date: ___/___/{examYear}
+//                 </div>
+//                 <div className="mt-1 text-sm md:text-base font-extrabold text-gray-900 tracking-wider uppercase">
+//                   {finalExamLabel}
+//                 </div>
+//               </div>
+              
+//             </div>
+
+//             {/* Rules and Footer */}
+//             <div className="border-t-2 border-green-800 pt-5 text-sm font-bold text-gray-800 space-y-2">
+//               <p>N.B: 1) Passcard-kan ardaygii uu ka lumo waa $5.</p>
+//               <p>2) Passcard aan sax ahayn ardaygii lagu arko waxaa laga joojinayaa imtixaanka.</p>
+              
+//               <div className="mt-6 flex justify-between items-end border-t border-gray-400 pt-2 text-[10px] md:text-xs text-gray-500 font-mono">
+//                 <div>Digital Ref: {passcard.name}</div>
+//                 <div className="text-right">
+//                   TXN: {passcard.transaction_id} <br/> 
+//                   Valid Until: {passcard.valid_until}
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         ) : null}
+
+//         {/* ── PASSCARD HISTORY SECTION ── */}
+//         {!loading && passcardHistory.length > 0 && (
+//           <div className="mt-10 print:hidden">
+//             <h2 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Passcard History</h2>
+//             <div className="space-y-3">
+//               {passcardHistory.map((p, index) => (
+//                 <div key={index} className={`bg-white border ${p.name === passcard?.name ? 'border-blue-300 ring-2 ring-blue-50' : 'border-gray-200'} rounded-xl p-4 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-3`}>
+                  
+//                   {/* Left Side: Term & Type */}
+//                   <div>
+//                     <div className="flex items-center gap-2 mb-1">
+//                       <span className="font-bold text-gray-800">{p.academic_term}</span>
+//                       {p.name === passcard?.name && (
+//                         <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase">Current</span>
+//                       )}
+//                     </div>
+//                     <div className="text-xs text-gray-500 font-medium">
+//                       Payment Type: <span className="text-gray-700 font-bold">{p.payment_type} Exams</span>
+//                     </div>
+//                   </div>
+
+//                   {/* Right Side: Status & Dates */}
+//                   <div className="flex flex-col md:items-end text-xs space-y-1">
+//                     <div className="flex items-center gap-2">
+//                       <span className="text-gray-400">Status:</span>
+//                       {p.is_valid === 1 
+//                         ? <span className="font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✅ Valid</span>
+//                         : <span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">❌ Expired</span>
+//                       }
+//                     </div>
+//                     <div className="text-gray-400">Issued: <span className="text-gray-700">{p.issue_date}</span></div>
+//                     <div className="text-gray-400">Ref: <span className="font-mono text-gray-500">{p.name}</span></div>
+//                   </div>
+
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+//         )}
+
+//       </div>
+//     </div>
+//   )
+// }
+
+
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-interface Props {
-  student: any
-}
+interface Props { student: any }
 
 export default function Passcard({ student }: Props) {
   const [passcard, setPasscard] = useState<any>(null)
+  const [passcardHistory, setPasscardHistory] = useState<any[]>([]) 
+  const [term, setTerm]         = useState<any>(null)
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState('')
+  const [downloading, setDownloading] = useState(false)
 
-  const initials = student.full_name
-    ?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+  const initials = student.full_name?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
 
-  useEffect(() => {
-    fetchPasscard()
+  useEffect(() => { 
+    fetchData() 
   }, [])
 
-  async function fetchPasscard() {
+  async function fetchData() {
     setLoading(true)
     try {
-      const res = await fetch(
-        `/api/method/hu_passcard_system.api.payment.get_student_passcard?student_id=${student.student_id}`,
-        { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } }
-      )
-      const data = await res.json()
-      if (data.message?.passcard) {
-        setPasscard(data.message.passcard)
-      } else {
-        setError('No active passcard found. Please complete your fee payment.')
+      // 1. Fetch Current Term Info
+      const resTerm = await fetch(`/api/method/hu_passcard_system.api.payment.get_term_info?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
+      const dataTerm = await resTerm.json()
+      if (dataTerm.message?.term) {
+        setTerm(dataTerm.message.term)
       }
+
+      // 2. Fetch Active Passcard for Current Term
+      const resPass = await fetch(`/api/method/hu_passcard_system.api.payment.get_student_passcard?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
+      const dataPass = await resPass.json()
+      if (dataPass.message?.passcard) {
+        setPasscard(dataPass.message.passcard)
+      } else {
+        setError('No active passcard found for the current semester. Please complete your fee payment.')
+      }
+
+      // 3. Fetch ALL Passcard History
+      const resHistory = await fetch(`/api/method/hu_passcard_system.api.payment.get_all_student_passcards?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
+      const dataHistory = await resHistory.json()
+      if (dataHistory.message?.passcards) {
+        setPasscardHistory(dataHistory.message.passcards)
+      }
+
     } catch {
-      setError('Failed to load passcard. Please try again.')
+      setError('Failed to load passcard data. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const typeColor: Record<string, string> = {
-    'Mid Term':  'bg-yellow-500',
-    'Full Term': 'bg-blue-600',
+  function handleDownload() {
+    const element = document.getElementById('passcard-element')
+    if (!element) return
+
+    setDownloading(true)
+    
+    const script = document.createElement('script')
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    script.onload = () => {
+      ;(window as any).html2canvas(element, { scale: 2 }).then((canvas: HTMLCanvasElement) => {
+        const link = document.createElement('a')
+        link.download = `HU_Passcard_${student.student_id}.png`
+        link.href = canvas.toDataURL('image/png')
+        link.click()
+        setDownloading(false)
+      })
+    }
+    document.body.appendChild(script)
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
+  function getShortMonth(dateStr: string) {
+    if (!dateStr) return ''
+    return new Date(dateStr).toLocaleString('en-US', { month: 'short' })
+  }
 
-      {/* TOPBAR */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  const midTermLabel = term 
+    ? `${getShortMonth(term.start_date)}-${getShortMonth(term.mid_term_exam_end)}` 
+    : '...'
+    
+  const finalExamLabel = term 
+    ? `${getShortMonth(term.final_start)}-${getShortMonth(term.end_date)}` 
+    : '...'
+
+  let examYear = new Date().getFullYear().toString();
+  if (term?.end_date) {
+    examYear = new Date(term.end_date).getFullYear().toString();
+  } else if (student?.academic_year) {
+    const yearMatch = student.academic_year.match(/\d{4}/g);
+    if (yearMatch) {
+      examYear = yearMatch[yearMatch.length - 1]; 
+    }
+  }
+
+  const pType = String(passcard?.payment_type || '').toLowerCase()
+  const showMidTermStamp = pType.includes('mid') || pType.includes('month') || pType.includes('final')
+  const showFinalStamp = pType.includes('final')
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ACTIVE SEMESTER DETECTION
+  // ─────────────────────────────────────────────────────────────────────────────
+  const issueDate = passcard?.issue_date ? new Date(passcard.issue_date) : new Date();
+  const currentMonth = issueDate.getMonth() + 1; // JS months are 0-11, so +1 gives 1-12
+  
+  // Second semester runs from March (3) to August (8)
+  const isSecondSemester = currentMonth >= 3 && currentMonth <= 8;
+  const activeSemesterName = isSecondSemester ? "Second Semester" : "First Semester";
+
+  return (
+    <div className="min-h-screen bg-gray-100 pb-10">
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm print:hidden">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">HU</div>
-            <span className="text-blue-600 font-bold text-base">Student Portal</span>
+            <div className="w-9 h-9 bg-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-xs">HU</div>
+            <span className="text-blue-800 font-bold text-base">Student Portal</span>
           </div>
           <div className="hidden md:flex items-center gap-1">
-            <Link to="/dashboard" className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">Dashboard</Link>
-            <Link to="/pay-fee"   className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">Pay Fee</Link>
-            <Link to="/passcard"  className="px-4 py-2 text-sm font-semibold text-blue-600 bg-blue-50 rounded-lg">Passcard</Link>
+            <Link to="/dashboard" className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">Dashboard</Link>
+            <Link to="/pay-fee" className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">Pay Fee</Link>
+            <Link to="/passcard" className="px-4 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Passcard</Link>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-bold text-sm flex items-center justify-center">{initials}</div>
+            <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-800 font-bold text-sm flex items-center justify-center">{initials}</div>
           </div>
-        </div>
-        <div className="md:hidden border-t border-gray-100 flex">
-          <Link to="/dashboard" className="flex-1 text-center py-2 text-xs font-medium text-gray-500">Dashboard</Link>
-          <Link to="/pay-fee"   className="flex-1 text-center py-2 text-xs font-medium text-gray-500">Pay Fee</Link>
-          <Link to="/passcard"  className="flex-1 text-center py-2 text-xs font-semibold text-blue-600 bg-blue-50">Passcard</Link>
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">🪪 Exam Passcard</h1>
-        <p className="text-sm text-gray-500 mb-6">Your official exam entry passcard</p>
+      <div className="max-w-3xl mx-auto px-4 mt-10">
+        <div className="flex justify-between items-end mb-6 print:hidden">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">🪪 Exam Passcard</h1>
+            <p className="text-sm text-gray-500">Your official digital examination card</p>
+          </div>
+          
+          {passcard && !loading && !error && (
+            <button 
+              onClick={handleDownload} 
+              disabled={downloading}
+              className="hidden md:block bg-blue-800 hover:bg-blue-900 disabled:bg-blue-400 text-white text-xs font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors"
+            >
+              {downloading ? '⏳ Preparing Image...' : '⬇️ Download Image'}
+            </button>
+          )}
+        </div>
 
         {loading ? (
-          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
-            <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-            </svg>
+          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm print:hidden">
             <p className="text-gray-400 text-sm mt-3">Loading your passcard…</p>
           </div>
-        ) : error ? (
-          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center shadow-sm">
+        ) : error && !passcard ? (
+          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center shadow-sm print:hidden">
             <div className="text-5xl mb-4">🔒</div>
             <h2 className="text-lg font-bold text-gray-800 mb-2">No Passcard Available</h2>
             <p className="text-sm text-gray-500 mb-6">{error}</p>
-            <Link to="/pay-fee" className="inline-block bg-blue-600 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
-              Pay Fee to Get Passcard →
-            </Link>
+            <Link to="/pay-fee" className="inline-block bg-blue-800 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-blue-900 transition-colors">Pay Fee to Get Passcard →</Link>
           </div>
-        ) : (
-
-          /* ── THE PASSCARD ── */
-          <div className="bg-white border-2 border-blue-200 rounded-2xl shadow-lg overflow-hidden" id="passcard">
-
-            {/* Header strip */}
-            <div className={`${typeColor[passcard.payment_type] || 'bg-blue-600'} px-6 py-4 flex items-center justify-between`}>
-              <div>
-                <div className="text-white/70 text-xs font-semibold uppercase tracking-widest">Hargeisa University</div>
-                <div className="text-white font-bold text-xl">Exam Passcard</div>
+        ) : passcard ? (
+          
+          /* ── THE ACTIVE PAPER-STYLE PASSCARD ── */
+          <div id="passcard-element" className="bg-[#eef7f0] border-2 border-gray-400 p-6 md:p-10 shadow-2xl relative overflow-hidden text-gray-900 font-sans mb-10">
+            
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-center border-b-2 border-green-800 pb-5 mb-6 gap-4">
+              <div className="w-24 h-28 border-2 border-green-800 flex flex-col justify-center items-center text-green-800 bg-white">
+                <span className="font-bold text-5xl">HU</span>
               </div>
-              <div className="text-right">
-                <div className={`inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full`}>
-                  {passcard.payment_type}
+              
+              <div className="text-center flex-1">
+                <h1 className="text-2xl md:text-3xl font-serif font-extrabold text-green-900 tracking-wider uppercase">
+                  Hormuud University
+                </h1>
+                <p className="font-bold text-sm md:text-base mt-2 text-gray-800">
+                  Academic Year {student.academic_year || '2025/2026 B'}
+                </p>
+                
+                {/* NEW: ACTIVE SEMESTER INJECTED HERE */}
+                <p className="font-extrabold text-sm md:text-base text-green-700 uppercase tracking-widest my-1">
+                  — {activeSemesterName} —
+                </p>
+
+                <p className="font-bold text-sm md:text-base text-gray-800">
+                  Finance Clearance Card
+                </p>
+                <div className="bg-blue-800 text-white font-bold px-6 py-1.5 inline-block mt-2 tracking-widest text-sm border-2 border-blue-900 shadow-sm uppercase">
+                  Examination Card
                 </div>
               </div>
             </div>
 
-            {/* Body */}
-            <div className="p-6">
-              <div className="flex items-start gap-5 mb-6">
-                {/* Photo */}
-                <div className="flex-shrink-0">
-                  {student.photo
-                    ? <img src={student.photo} alt="Student" className="w-24 h-24 rounded-xl object-cover border-2 border-blue-100"/>
-                    : <div className="w-24 h-24 rounded-xl bg-blue-100 text-blue-600 font-bold text-3xl flex items-center justify-center border-2 border-blue-200">{initials}</div>
-                  }
-                </div>
+            {/* Certification Body */}
+            <div className="text-base md:text-lg leading-loose mb-10 font-semibold text-gray-800">
+              <p className="block">
+                This card certified that Mr. / Mrs. 
+                <span className="inline-block border-b-2 border-black border-dashed min-w-[250px] md:min-w-[350px] px-3 ml-2 font-bold text-black uppercase">
+                  {student.full_name}
+                </span>
+              </p>
+              <p className="block mt-4 md:mt-6">
+                ID No: 
+                <span className="inline-block border-b-2 border-black border-dashed min-w-[120px] px-3 mx-2 font-bold text-black uppercase">
+                  {student.student_id}
+                </span>
+                Class: 
+                <span className="inline-block border-b-2 border-black border-dashed min-w-[120px] px-3 mx-2 font-bold text-black uppercase">
+                  {student.batch || student.department}
+                </span>
+                is eligible to attend this exam.
+              </p>
+            </div>
 
-                {/* Info */}
-                <div className="flex-1">
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">{student.full_name}</h2>
-                  <p className="text-blue-600 font-bold text-sm mb-3">{student.student_id}</p>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                    <div><span className="text-gray-400">Faculty:</span> <span className="font-medium text-gray-700">{student.faculty || '—'}</span></div>
-                    <div><span className="text-gray-400">Department:</span> <span className="font-medium text-gray-700">{student.department || '—'}</span></div>
-                    <div><span className="text-gray-400">Batch:</span> <span className="font-medium text-gray-700">{student.batch || '—'}</span></div>
-                    <div><span className="text-gray-400">Academic Year:</span> <span className="font-medium text-gray-700">{student.academic_year || '—'}</span></div>
+            {/* Exam Stamps Circles */}
+            <div className="flex flex-col md:flex-row justify-center md:justify-around items-center gap-10 mb-8 px-4">
+              
+              {/* Mid-Term Wrapper */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-40 h-40 md:w-44 md:h-44 rounded-full border-2 border-black flex flex-col justify-center items-center text-center p-2 bg-[#eef7f0]">
+                  <div className="text-sm md:text-base font-extrabold uppercase leading-snug">
+                    Mid-Term<br/>Exam
                   </div>
+                  
+                  {showMidTermStamp && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <div className="border-[6px] border-red-600 text-red-600 text-4xl md:text-5xl font-black uppercase tracking-widest transform -rotate-[15deg] px-5 py-2 opacity-90 mix-blend-multiply bg-transparent rounded-sm">
+                        PAID
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-4 text-xs md:text-sm font-bold text-gray-800">
+                  Date: ___/___/{examYear}
+                </div>
+                <div className="mt-1 text-sm md:text-base font-extrabold text-gray-900 tracking-wider uppercase">
+                  {midTermLabel}
                 </div>
               </div>
 
-              {/* Passcard details */}
-              <div className="border-t border-dashed border-gray-200 pt-4 grid grid-cols-2 gap-4 text-xs mb-4">
-                <div>
-                  <div className="text-gray-400 mb-0.5">Passcard No.</div>
-                  <div className="font-bold text-gray-800 text-sm">{passcard.name}</div>
-                </div>
-                <div>
-                  <div className="text-gray-400 mb-0.5">Valid For</div>
-                  <div className="font-bold text-gray-800 text-sm">{passcard.payment_type} Exams</div>
-                </div>
-                <div>
-                  <div className="text-gray-400 mb-0.5">Issued On</div>
-                  <div className="font-bold text-gray-800">{passcard.issue_date}</div>
-                </div>
-                <div>
-                  <div className="text-gray-400 mb-0.5">Valid Until</div>
-                  <div className="font-bold text-gray-800">{passcard.valid_until}</div>
-                </div>
-                <div>
-                  <div className="text-gray-400 mb-0.5">Amount Paid</div>
-                  <div className="font-bold text-green-600">${passcard.amount_paid}</div>
-                </div>
-                <div>
-                  <div className="text-gray-400 mb-0.5">Status</div>
-                  <div className={`inline-block font-bold px-2 py-0.5 rounded-full text-xs ${passcard.is_valid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                    {passcard.is_valid ? '✅ Valid' : '❌ Expired'}
+              {/* Final Exam Wrapper */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-40 h-40 md:w-44 md:h-44 rounded-full border-2 border-black flex flex-col justify-center items-center text-center p-2 bg-[#eef7f0]">
+                  <div className="text-sm md:text-base font-extrabold uppercase leading-snug">
+                    Final<br/>Exam
                   </div>
+                  
+                  {showFinalStamp && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <div className="border-[6px] border-red-600 text-red-600 text-4xl md:text-5xl font-black uppercase tracking-widest transform -rotate-[15deg] px-5 py-2 opacity-90 mix-blend-multiply bg-transparent rounded-sm">
+                        PAID
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-4 text-xs md:text-sm font-bold text-gray-800">
+                  Date: ___/___/{examYear}
+                </div>
+                <div className="mt-1 text-sm md:text-base font-extrabold text-gray-900 tracking-wider uppercase">
+                  {finalExamLabel}
                 </div>
               </div>
+              
+            </div>
 
-              {/* Transaction */}
-              <div className="bg-gray-50 rounded-xl px-4 py-2 text-xs text-gray-500 mb-4">
-                Transaction ID: <span className="font-mono font-bold text-gray-700">{passcard.transaction_id}</span>
+            {/* Rules and Footer */}
+            <div className="border-t-2 border-green-800 pt-5 text-sm font-bold text-gray-800 space-y-2">
+              <p>N.B: 1) Passcard-kan ardaygii uu ka lumo waa $5.</p>
+              <p>2) Passcard aan sax ahayn ardaygii lagu arko waxaa laga joojinayaa imtixaanka.</p>
+              
+              <div className="mt-6 flex justify-between items-end border-t border-gray-400 pt-2 text-[10px] md:text-xs text-gray-500 font-mono">
+                <div>Digital Ref: {passcard.name}</div>
+                <div className="text-right">
+                  TXN: {passcard.transaction_id} <br/> 
+                  Valid Until: {passcard.valid_until}
+                </div>
               </div>
+            </div>
+          </div>
+        ) : null}
 
-              {/* Footer */}
-              <div className="border-t border-gray-100 pt-3 flex items-center justify-between text-xs text-gray-400">
-                <span>This passcard is required for exam entry</span>
-                <span>HU © {new Date().getFullYear()}</span>
-              </div>
+        {/* ── PASSCARD HISTORY SECTION ── */}
+        {!loading && passcardHistory.length > 0 && (
+          <div className="mt-10 print:hidden">
+            <h2 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Passcard History</h2>
+            <div className="space-y-3">
+              {passcardHistory.map((p, index) => (
+                <div key={index} className={`bg-white border ${p.name === passcard?.name ? 'border-blue-300 ring-2 ring-blue-50' : 'border-gray-200'} rounded-xl p-4 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-3`}>
+                  
+                  {/* Left Side: Term & Type */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-gray-800">{p.academic_term}</span>
+                      {p.name === passcard?.name && (
+                        <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase">Current</span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500 font-medium">
+                      Payment Type: <span className="text-gray-700 font-bold">{p.payment_type} Exams</span>
+                    </div>
+                  </div>
+
+                  {/* Right Side: Status & Dates */}
+                  <div className="flex flex-col md:items-end text-xs space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Status:</span>
+                      {p.is_valid === 1 
+                        ? <span className="font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✅ Valid</span>
+                        : <span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">❌ Expired</span>
+                      }
+                    </div>
+                    <div className="text-gray-400">Issued: <span className="text-gray-700">{p.issue_date}</span></div>
+                    <div className="text-gray-400">Ref: <span className="font-mono text-gray-500">{p.name}</span></div>
+                  </div>
+
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {passcard && (
-          <p className="text-center text-xs text-gray-400 mt-4">
-            Show this passcard to the exam supervisor to enter the exam hall.
-          </p>
-        )}
       </div>
     </div>
   )

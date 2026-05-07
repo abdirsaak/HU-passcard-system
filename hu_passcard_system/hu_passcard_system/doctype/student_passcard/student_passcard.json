@@ -28,11 +28,13 @@
    "fetch_from": "student.full_name",
    "fieldname": "student_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Student name"
   },
   {
    "fieldname": "academic_term",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Academic term",
    "options": "Academic Term"
   },
@@ -66,6 +68,7 @@
   {
    "fieldname": "valid_until",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Valid until"
   },
   {
@@ -83,7 +86,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-05 13:12:25.662655",
+ "modified": "2026-05-06 16:39:15.285786",
  "modified_by": "Administrator",
  "module": "Hu Passcard System",
  "name": "Student Passcard",
