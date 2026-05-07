@@ -519,8 +519,8 @@ def call_waafi(phone, amount, reference_id, invoice_id, description):
             "payerInfo":     {"accountNo": cleaned},
             "transactionInfo": {
                 "referenceId": reference_id, "invoiceId": invoice_id,
-                # "amount": str(amount), "currency": "USD",
-                "amount": str(round(float(amount), 2)), "currency": "USD",
+                "amount": str(amount), "currency": "USD",
+                # "amount": str(round(float(amount), 2)), "currency": "USD",
                 "description": description,
             },
         },
