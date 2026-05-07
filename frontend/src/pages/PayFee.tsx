@@ -244,23 +244,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-interface Props { student: any }
-
-interface TermInfo {
-  name: string
-  term_name: string
-  academic_year: string
-  start_date: string
-  end_date: string
-  mid_term_exam_start: string
-  mid_term_exam_end: string
-  final_start: string
-  final_end: string
-  current_phase: 'before_term' | 'mid_term' | 'between' | 'final' | 'ended'
-  months: { label: string, value: string }[] 
-}
-
-export default function PayFee({ student }: Props) {
+export default function PayFee({ student }: { student: any }) {
   const [phone, setPhone]             = useState(student.phone_number || '')
   const [paymentType, setPaymentType] = useState<'Mid term' | 'Final' | 'Month'>('Mid term')
   const [targetMonth, setTargetMonth] = useState<string>('')
@@ -268,28 +252,21 @@ export default function PayFee({ student }: Props) {
   const [result, setResult]           = useState<any>(null)
   const [error, setError]             = useState('')
   const [payments, setPayments]       = useState<any[]>([])
-  const [term, setTerm]               = useState<TermInfo | null>(null)
-  const [termLoading, setTermLoading] = useState(true)
+  const [term, setTerm]               = useState<any>(null)
 
-  const semesterFee  = Number(student.fee || 0)
-  const discount     = Number(student.discount || 0)
-  const finalFee     = Math.round(semesterFee * (1 - discount / 100) * 100) / 100
-  const midTermFee   = Math.round(finalFee / 2 * 100) / 100
-  const totalMonths  = term?.months?.length || 1
-  const monthlyFee   = Math.round(finalFee / totalMonths * 100) / 100
-
-  let amount = paymentType === 'Mid term' ? midTermFee : paymentType === 'Final' ? finalFee : monthlyFee
   const initials = student.full_name?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
 
-  useEffect(() => { fetchTerm(); fetchPayments() }, [])
+  useEffect(() => { 
+    fetchTerm(); 
+    fetchPayments(); 
+  }, [])
 
   async function fetchTerm() {
-    setTermLoading(true)
     try {
       const res = await fetch(`/api/method/hu_passcard_system.api.payment.get_term_info?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
       const data = await res.json()
       if (data.message?.term) setTerm(data.message.term)
-    } catch {} finally { setTermLoading(false) }
+    } catch {}
   }
 
   async function fetchPayments() {
@@ -300,39 +277,49 @@ export default function PayFee({ student }: Props) {
     } catch {}
   }
 
-  // 1. Get explicitly paid individual months from DB
-  let paidMonths = payments
-    .filter(p => p.payment_type === 'Month' && p.status === 'Paid')
-    .map(p => p.notes)
+  const semesterFee  = Number(student.fee || 0)
+  const discount     = Number(student.discount_percentage || 0)
+  
+  // EXACT MATH: Remove aggressive Math.round() to handle tiny test amounts like 0.025 perfectly
+  const finalFee     = Number((semesterFee * (1 - discount / 100)).toFixed(4))
+  const midTermFee   = Number((finalFee / 2).toFixed(4))
+  
+  const totalMonthsCount = term?.months?.length || 6;
+  
+  // Floor the base monthly fee to 3 decimals so we NEVER overshoot the total.
+  // This guarantees the remainder for the last month is always positive and mathematically exact.
+  const monthlyFee   = Math.floor((finalFee / totalMonthsCount) * 1000) / 1000
 
-  const totalMonthsCount = term?.months?.length || 1;
+  // CALCULATION LOGIC: Calculate exact amount depending on month selected
+  let amount = 0;
+  if (paymentType === 'Mid term') {
+    amount = midTermFee;
+  } else if (paymentType === 'Final') {
+    amount = finalFee;
+  } else {
+    const selectedIndex = term?.months?.findIndex((m: any) => m.value === targetMonth);
+    const isLastMonth = selectedIndex === totalMonthsCount - 1;
+    
+    amount = isLastMonth 
+      ? Number((finalFee - (monthlyFee * (totalMonthsCount - 1))).toFixed(4))
+      : monthlyFee;
+  }
+
+  const paidMonthsList = payments.filter(p => p.payment_type === 'Month' && p.status === 'Paid').map(p => p.notes)
   const halfMonthsCount = Math.ceil(totalMonthsCount / 2);
 
   const explicitMidPaid   = payments.some(p => p.payment_type === 'Mid term' && p.status === 'Paid')
   const explicitFinalPaid = payments.some(p => p.payment_type === 'Final' && p.status === 'Paid')
 
-  // 2. Auto-Lock logic: Mark Mid/Final as paid if enough months are completed
-  const alreadyPaidMid   = explicitMidPaid || explicitFinalPaid || (paidMonths.length >= halfMonthsCount);
-  const alreadyPaidFinal = explicitFinalPaid || (paidMonths.length >= totalMonthsCount);
-
-  // 3. Auto-tick individual months if bulk payment was made
-  if (term?.months) {
-    term.months.forEach((m, index) => {
-      if (explicitFinalPaid && !paidMonths.includes(m.value)) {
-        paidMonths.push(m.value) // Final covers all months
-      } else if (explicitMidPaid && index < halfMonthsCount && !paidMonths.includes(m.value)) {
-        paidMonths.push(m.value) // Mid-term covers first half
-      }
-    })
-  }
-
-  const nextUnpaidMonth = term?.months?.find(m => !paidMonths.includes(m.value))?.value
+  const alreadyPaidMid   = explicitMidPaid || explicitFinalPaid || (paidMonthsList.length >= halfMonthsCount);
+  const alreadyPaidFinal = explicitFinalPaid || (paidMonthsList.length >= totalMonthsCount);
 
   useEffect(() => {
-    if (paymentType === 'Month' && nextUnpaidMonth && !targetMonth) {
-      setTargetMonth(nextUnpaidMonth)
+    if (paymentType === 'Month' && term?.months) {
+        const nextUnpaid = term.months.find((m: any) => !paidMonthsList.includes(m.value))?.value;
+        if (nextUnpaid && !targetMonth) setTargetMonth(nextUnpaid);
     }
-  }, [paymentType, nextUnpaidMonth])
+  }, [paymentType, term, paidMonthsList, targetMonth])
 
   async function handlePay() {
     if (!phone) { setError('Please enter your EVC Plus phone number.'); return }
@@ -403,7 +390,6 @@ export default function PayFee({ student }: Props) {
             <>
               {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-3 text-sm mb-4">{error}</div>}
 
-              {/* Options Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
                 <button onClick={() => setPaymentType('Mid term')} disabled={alreadyPaidMid} className={`p-4 rounded-xl border-2 text-left transition-all ${paymentType === 'Mid term' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} disabled:opacity-50`}>
                   <div className="text-xs font-bold text-gray-700">Mid-Term</div>
@@ -424,24 +410,28 @@ export default function PayFee({ student }: Props) {
                 </button>
               </div>
 
-              {/* Month Selection List */}
               {paymentType === 'Month' && term?.months && (
                 <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-4">
                   <h3 className="text-xs font-bold text-gray-700 mb-3">Installment Sequence</h3>
-                  <div className="space-y-2">
-                    {term.months.map(m => {
-                      const isPaid = paidMonths.includes(m.value)
-                      const isSelected = targetMonth === m.value
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {term.months.map((m: any, index: number) => {
+                      const isPaid = paidMonthsList.includes(m.value)
+                      
+                      // UI RENDER LOGIC: display exact fractions mapped to labels
+                      const isLastMonth = index === term.months.length - 1;
+                      const displayFee = isLastMonth 
+                        ? Number((finalFee - (monthlyFee * (term.months.length - 1))).toFixed(4))
+                        : monthlyFee;
 
                       return (
-                        <label key={m.value} className={`flex items-center justify-between p-3 rounded-lg border ${isPaid ? 'border-green-200 bg-green-50 opacity-60 cursor-not-allowed' : isSelected ? 'border-blue-500 bg-blue-50 cursor-pointer' : 'border-gray-200 bg-white cursor-pointer hover:bg-gray-50'}`}>
+                        <label key={m.value} className={`flex items-center justify-between p-4 border rounded-xl transition-all ${isPaid ? 'bg-green-50 border-green-200 opacity-60' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}>
                           <div className="flex items-center gap-3">
-                            <input type="radio" name="month" value={m.value} checked={isSelected} onChange={() => setTargetMonth(m.value)} disabled={isPaid} className="w-4 h-4 text-blue-600"/>
-                            <span className="text-sm font-semibold text-gray-800">{m.label}</span>
+                            <input type="radio" name="month" disabled={isPaid} checked={targetMonth === m.value} onChange={() => setTargetMonth(m.value)} className="w-4 h-4 text-blue-600" />
+                            <span className="font-bold text-gray-800">
+                              {m.label} (${displayFee})
+                            </span>
                           </div>
-                          <div className="text-xs font-bold">
-                            {isPaid ? <span className="text-green-600">✅ Paid</span> : <span className="text-blue-600">Pay ${monthlyFee}</span>}
-                          </div>
+                          {isPaid && <span className="text-green-600 text-xs font-bold">✅ PAID</span>}
                         </label>
                       )
                     })}
@@ -449,7 +439,6 @@ export default function PayFee({ student }: Props) {
                 </div>
               )}
 
-              {/* Payment Details */}
               <div className="mb-4">
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">EVC Plus Phone Number</label>
                 <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g. 0617611425" className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white transition-colors"/>
@@ -462,7 +451,6 @@ export default function PayFee({ student }: Props) {
           )}
         </div>
         
-        {/* Payment History View */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mt-6">
            <h2 className="text-sm font-bold text-gray-700 mb-4">🧾 Payment History</h2>
            {payments.length === 0 ? (

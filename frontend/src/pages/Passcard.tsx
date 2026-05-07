@@ -7,7 +7,7 @@
 
 // export default function Passcard({ student }: Props) {
 //   const [passcard, setPasscard] = useState<any>(null)
-//   const [passcardHistory, setPasscardHistory] = useState<any[]>([]) // NEW: State for history
+//   const [passcardHistory, setPasscardHistory] = useState<any[]>([]) 
 //   const [term, setTerm]         = useState<any>(null)
 //   const [loading, setLoading]   = useState(true)
 //   const [error, setError]       = useState('')
@@ -99,6 +99,16 @@
 //   const showMidTermStamp = pType.includes('mid') || pType.includes('month') || pType.includes('final')
 //   const showFinalStamp = pType.includes('final')
 
+//   // ─────────────────────────────────────────────────────────────────────────────
+//   // ACTIVE SEMESTER DETECTION
+//   // ─────────────────────────────────────────────────────────────────────────────
+//   const issueDate = passcard?.issue_date ? new Date(passcard.issue_date) : new Date();
+//   const currentMonth = issueDate.getMonth() + 1; // JS months are 0-11, so +1 gives 1-12
+  
+//   // Second semester runs from March (3) to August (8)
+//   const isSecondSemester = currentMonth >= 3 && currentMonth <= 8;
+//   const activeSemesterName = isSecondSemester ? "Second Semester" : "First Semester";
+
 //   return (
 //     <div className="min-h-screen bg-gray-100 pb-10">
 //       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm print:hidden">
@@ -165,10 +175,16 @@
 //                 <p className="font-bold text-sm md:text-base mt-2 text-gray-800">
 //                   Academic Year {student.academic_year || '2025/2026 B'}
 //                 </p>
+                
+//                 {/* NEW: ACTIVE SEMESTER INJECTED HERE */}
+//                 <p className="font-extrabold text-sm md:text-base text-green-700 uppercase tracking-widest my-1">
+//                   — {activeSemesterName} —
+//                 </p>
+
 //                 <p className="font-bold text-sm md:text-base text-gray-800">
 //                   Finance Clearance Card
 //                 </p>
-//                 <div className="bg-blue-800 text-white font-bold px-6 py-1.5 inline-block mt-3 tracking-widest text-sm border-2 border-blue-900 shadow-sm uppercase">
+//                 <div className="bg-blue-800 text-white font-bold px-6 py-1.5 inline-block mt-2 tracking-widest text-sm border-2 border-blue-900 shadow-sm uppercase">
 //                   Examination Card
 //                 </div>
 //               </div>
@@ -309,7 +325,6 @@
 //   )
 // }
 
-
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -332,25 +347,26 @@ export default function Passcard({ student }: Props) {
   async function fetchData() {
     setLoading(true)
     try {
-      // 1. Fetch Current Term Info
-      const resTerm = await fetch(`/api/method/hu_passcard_system.api.payment.get_term_info?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
-      const dataTerm = await resTerm.json()
-      if (dataTerm.message?.term) {
-        setTerm(dataTerm.message.term)
-      }
+      const headers = { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' }
 
-      // 2. Fetch Active Passcard for Current Term
-      const resPass = await fetch(`/api/method/hu_passcard_system.api.payment.get_student_passcard?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
+      const [resTerm, resPass, resHistory] = await Promise.all([
+        fetch(`/api/method/hu_passcard_system.api.payment.get_term_info?student_id=${student.student_id}`, { headers }),
+        fetch(`/api/method/hu_passcard_system.api.payment.get_student_passcard?student_id=${student.student_id}`, { headers }),
+        fetch(`/api/method/hu_passcard_system.api.payment.get_all_student_passcards?student_id=${student.student_id}`, { headers })
+      ]);
+
+      const dataTerm = await resTerm.json()
       const dataPass = await resPass.json()
+      const dataHistory = await resHistory.json()
+
+      if (dataTerm.message?.term) setTerm(dataTerm.message.term)
+      
       if (dataPass.message?.passcard) {
         setPasscard(dataPass.message.passcard)
       } else {
         setError('No active passcard found for the current semester. Please complete your fee payment.')
       }
 
-      // 3. Fetch ALL Passcard History
-      const resHistory = await fetch(`/api/method/hu_passcard_system.api.payment.get_all_student_passcards?student_id=${student.student_id}`, { headers: { 'X-Frappe-CSRF-Token': (window as any).csrf_token || 'fetch' } })
-      const dataHistory = await resHistory.json()
       if (dataHistory.message?.passcards) {
         setPasscardHistory(dataHistory.message.passcards)
       }
@@ -367,7 +383,6 @@ export default function Passcard({ student }: Props) {
     if (!element) return
 
     setDownloading(true)
-    
     const script = document.createElement('script')
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
     script.onload = () => {
@@ -387,37 +402,28 @@ export default function Passcard({ student }: Props) {
     return new Date(dateStr).toLocaleString('en-US', { month: 'short' })
   }
 
-  const midTermLabel = term 
-    ? `${getShortMonth(term.start_date)}-${getShortMonth(term.mid_term_exam_end)}` 
-    : '...'
-    
-  const finalExamLabel = term 
-    ? `${getShortMonth(term.final_start)}-${getShortMonth(term.end_date)}` 
-    : '...'
+  const midTermLabel = term ? `${getShortMonth(term.start_date)}-${getShortMonth(term.end_date)}` : '...'
+  const finalExamLabel = term ? `${getShortMonth(term.start_date)}-${getShortMonth(term.end_date)}` : '...'
 
   let examYear = new Date().getFullYear().toString();
   if (term?.end_date) {
     examYear = new Date(term.end_date).getFullYear().toString();
   } else if (student?.academic_year) {
     const yearMatch = student.academic_year.match(/\d{4}/g);
-    if (yearMatch) {
-      examYear = yearMatch[yearMatch.length - 1]; 
-    }
+    if (yearMatch) examYear = yearMatch[yearMatch.length - 1]; 
   }
 
   const pType = String(passcard?.payment_type || '').toLowerCase()
   const showMidTermStamp = pType.includes('mid') || pType.includes('month') || pType.includes('final')
   const showFinalStamp = pType.includes('final')
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // ACTIVE SEMESTER DETECTION
-  // ─────────────────────────────────────────────────────────────────────────────
-  const issueDate = passcard?.issue_date ? new Date(passcard.issue_date) : new Date();
-  const currentMonth = issueDate.getMonth() + 1; // JS months are 0-11, so +1 gives 1-12
-  
-  // Second semester runs from March (3) to August (8)
-  const isSecondSemester = currentMonth >= 3 && currentMonth <= 8;
-  const activeSemesterName = isSecondSemester ? "Second Semester" : "First Semester";
+  let activeSemesterName = "FIRST SEMESTER";
+  if (term?.term_name) {
+    const nameStr = String(term.term_name).toLowerCase();
+    if (nameStr.includes('2') || nameStr.includes('second')) {
+        activeSemesterName = "SECOND SEMESTER";
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 pb-10">
@@ -469,10 +475,8 @@ export default function Passcard({ student }: Props) {
           </div>
         ) : passcard ? (
           
-          /* ── THE ACTIVE PAPER-STYLE PASSCARD ── */
           <div id="passcard-element" className="bg-[#eef7f0] border-2 border-gray-400 p-6 md:p-10 shadow-2xl relative overflow-hidden text-gray-900 font-sans mb-10">
             
-            {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-center border-b-2 border-green-800 pb-5 mb-6 gap-4">
               <div className="w-24 h-28 border-2 border-green-800 flex flex-col justify-center items-center text-green-800 bg-white">
                 <span className="font-bold text-5xl">HU</span>
@@ -486,7 +490,6 @@ export default function Passcard({ student }: Props) {
                   Academic Year {student.academic_year || '2025/2026 B'}
                 </p>
                 
-                {/* NEW: ACTIVE SEMESTER INJECTED HERE */}
                 <p className="font-extrabold text-sm md:text-base text-green-700 uppercase tracking-widest my-1">
                   — {activeSemesterName} —
                 </p>
@@ -500,7 +503,6 @@ export default function Passcard({ student }: Props) {
               </div>
             </div>
 
-            {/* Certification Body */}
             <div className="text-base md:text-lg leading-loose mb-10 font-semibold text-gray-800">
               <p className="block">
                 This card certified that Mr. / Mrs. 
@@ -521,10 +523,8 @@ export default function Passcard({ student }: Props) {
               </p>
             </div>
 
-            {/* Exam Stamps Circles */}
             <div className="flex flex-col md:flex-row justify-center md:justify-around items-center gap-10 mb-8 px-4">
               
-              {/* Mid-Term Wrapper */}
               <div className="flex flex-col items-center">
                 <div className="relative w-40 h-40 md:w-44 md:h-44 rounded-full border-2 border-black flex flex-col justify-center items-center text-center p-2 bg-[#eef7f0]">
                   <div className="text-sm md:text-base font-extrabold uppercase leading-snug">
@@ -548,7 +548,6 @@ export default function Passcard({ student }: Props) {
                 </div>
               </div>
 
-              {/* Final Exam Wrapper */}
               <div className="flex flex-col items-center">
                 <div className="relative w-40 h-40 md:w-44 md:h-44 rounded-full border-2 border-black flex flex-col justify-center items-center text-center p-2 bg-[#eef7f0]">
                   <div className="text-sm md:text-base font-extrabold uppercase leading-snug">
@@ -574,7 +573,6 @@ export default function Passcard({ student }: Props) {
               
             </div>
 
-            {/* Rules and Footer */}
             <div className="border-t-2 border-green-800 pt-5 text-sm font-bold text-gray-800 space-y-2">
               <p>N.B: 1) Passcard-kan ardaygii uu ka lumo waa $5.</p>
               <p>2) Passcard aan sax ahayn ardaygii lagu arko waxaa laga joojinayaa imtixaanka.</p>
@@ -590,7 +588,6 @@ export default function Passcard({ student }: Props) {
           </div>
         ) : null}
 
-        {/* ── PASSCARD HISTORY SECTION ── */}
         {!loading && passcardHistory.length > 0 && (
           <div className="mt-10 print:hidden">
             <h2 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Passcard History</h2>
@@ -598,7 +595,6 @@ export default function Passcard({ student }: Props) {
               {passcardHistory.map((p, index) => (
                 <div key={index} className={`bg-white border ${p.name === passcard?.name ? 'border-blue-300 ring-2 ring-blue-50' : 'border-gray-200'} rounded-xl p-4 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-3`}>
                   
-                  {/* Left Side: Term & Type */}
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-bold text-gray-800">{p.academic_term}</span>
@@ -611,7 +607,6 @@ export default function Passcard({ student }: Props) {
                     </div>
                   </div>
 
-                  {/* Right Side: Status & Dates */}
                   <div className="flex flex-col md:items-end text-xs space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-gray-400">Status:</span>
