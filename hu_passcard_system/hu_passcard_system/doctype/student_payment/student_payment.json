@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "Fee-.####",
  "creation": "2026-05-05 12:48:44.552649",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -23,7 +24,7 @@
   {
    "fieldname": "student",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Student",
    "options": "Student"
   },
@@ -38,6 +39,7 @@
    "fieldname": "academic_term",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Academic term",
    "options": "Academic Term"
   },
@@ -63,6 +65,7 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Phone number"
   },
   {
@@ -70,6 +73,7 @@
    "fieldname": "payment_date",
    "fieldtype": "Datetime",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Payment date"
   },
   {
@@ -100,10 +104,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-06 11:41:33.225717",
+ "modified": "2026-05-16 11:48:21.280763",
  "modified_by": "Administrator",
  "module": "Hu Passcard System",
  "name": "Student Payment",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

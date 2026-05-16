@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "Passcard-.####",
  "creation": "2026-05-05 12:59:37.322391",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -21,6 +22,7 @@
   {
    "fieldname": "student",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "student",
    "options": "Student"
   },
@@ -35,18 +37,21 @@
    "fieldname": "academic_term",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Academic term",
    "options": "Academic Term"
   },
   {
    "fieldname": "payment",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Payment",
    "options": "Student Payment"
   },
   {
    "fieldname": "payment_type",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Payment type",
    "options": "Mid term\nFInal\nMonth"
   },
@@ -86,10 +91,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-06 16:39:15.285786",
+ "modified": "2026-05-16 11:51:40.816754",
  "modified_by": "Administrator",
  "module": "Hu Passcard System",
  "name": "Student Passcard",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
